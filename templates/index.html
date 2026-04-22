@@ -1,33 +1,378 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Crop Recommendation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AI-powered crop recommendation system. Enter soil and climate parameters to get the best crop suggestion for your land.">
+    <title>Cropalyst — Smart Crop Recommender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .logo-icon .material-symbols-outlined {
+            font-size: 1.6rem;
+        }
+
+        .section-icon .material-symbols-outlined,
+        .divider-icon .material-symbols-outlined {
+            font-size: 1.5rem;
+        }
+
+        .label-icon .material-symbols-outlined {
+            font-size: 1rem;
+        }
+
+        .info-icon .material-symbols-outlined {
+            font-size: 1.8rem;
+        }
+
+        .result-icon-wrap .material-symbols-outlined {
+            font-size: 2rem;
+        }
+
+        .btn-icon .material-symbols-outlined {
+            font-size: 1.2rem;
+        }
+
+        .footer-icon {
+            color: #e05c7a;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>🌱 Crop Recommendation System</h1>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
 
-    <form action="/predict" method="post">
-        <input type="number" step="any" name="N" placeholder="Nitrogen" required>
-        <input type="number" step="any" name="P" placeholder="Phosphorus" required>
-        <input type="number" step="any" name="K" placeholder="Potassium" required>
-        <input type="number" step="any" name="temperature" placeholder="Temperature" required>
-        <input type="number" step="any" name="humidity" placeholder="Humidity" required>
-        <input type="number" step="any" name="ph" placeholder="pH" required>
-        <input type="number" step="any" name="rainfall" placeholder="Rainfall" required>
+    <div class="particles" id="particles"></div>
 
-        <button type="submit">Predict 🌾</button>
-    </form>
+    <div class="page-wrapper">
 
-    {% if prediction %}
-        <div class="result">
-            Recommended Crop: <strong>{{ prediction }}</strong>
-        </div>
-    {% endif %}
-</div>
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon"><span class="material-symbols-outlined">grass</span></div>
+                <span class="logo-text">CropAlyst</span>
+            </div>
+            <div class="header-badge">
+                <span class="badge-dot"></span>
+                AI-Powered
+            </div>
+        </header>
 
+        <section class="hero">
+            <div class="hero-tag">
+                <span class="material-symbols-outlined" style="font-size:1rem;margin-right:4px;">eco</span>
+                Smart Agriculture
+            </div>
+            <h1 class="hero-title">
+                Find the <span class="gradient-text">Perfect Crop</span><br>
+                for Your Soil
+            </h1>
+            <p class="hero-subtitle">
+                Enter your soil nutrients and climate data. Our machine learning model will recommend the most suitable
+                crop for maximum yield.
+            </p>
+        </section>
+
+        <main class="main-card">
+
+            <div class="steps">
+                <div class="step active" id="step-soil">
+                    <div class="step-num">1</div>
+                    <span>Soil Nutrients</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step-climate">
+                    <div class="step-num">2</div>
+                    <span>Climate Data</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step-result">
+                    <div class="step-num">3</div>
+                    <span>Result</span>
+                </div>
+            </div>
+
+            <form action="/predict" method="post" id="predict-form" novalidate>
+
+                <div class="form-section" id="section-soil">
+                    <div class="section-header">
+                        <div class="section-icon"><span class="material-symbols-outlined">science</span></div>
+                        <div>
+                            <h2 class="section-title">Soil Nutrients</h2>
+                            <p class="section-desc">Enter NPK values in kg/ha</p>
+                        </div>
+                    </div>
+
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="N">
+                                <span class="label-icon"><span class="material-symbols-outlined">nutrition</span></span>
+                                Nitrogen (N)
+                                <span class="label-unit">kg/ha</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="N" name="N" placeholder="e.g. 90" min="0" max="200"
+                                    value="{{ request.form.get('N', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Typical range: 0–200</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="P">
+                                <span class="label-icon"><span class="material-symbols-outlined">nutrition</span></span>
+                                Phosphorus (P)
+                                <span class="label-unit">kg/ha</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="P" name="P" placeholder="e.g. 42" min="0" max="200"
+                                    value="{{ request.form.get('P', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Typical range: 5–145</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="K">
+                                <span class="label-icon"><span class="material-symbols-outlined">nutrition</span></span>
+                                Potassium (K)
+                                <span class="label-unit">kg/ha</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="K" name="K" placeholder="e.g. 43" min="0" max="205"
+                                    value="{{ request.form.get('K', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Typical range: 5–205</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-divider">
+                    <div class="divider-line"></div>
+                    <div class="divider-icon"><span class="material-symbols-outlined">cloud</span></div>
+                    <div class="divider-line"></div>
+                </div>
+
+                <div class="form-section" id="section-climate">
+                    <div class="section-header">
+                        <div class="section-icon"><span class="material-symbols-outlined">thermostat</span></div>
+                        <div>
+                            <h2 class="section-title">Climate Conditions</h2>
+                            <p class="section-desc">Your local environmental data</p>
+                        </div>
+                    </div>
+
+                    <div class="input-grid input-grid-2">
+                        <div class="input-group">
+                            <label for="temperature">
+                                <span class="label-icon"><span
+                                        class="material-symbols-outlined">thermostat</span></span> Temperature
+                                <span class="label-unit">°C</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="temperature" name="temperature"
+                                    placeholder="e.g. 25.5" min="-10" max="60"
+                                    value="{{ request.form.get('temperature', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Range: -10°C to 60°C</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="humidity">
+                                <span class="label-icon"><span
+                                        class="material-symbols-outlined">water_drop</span></span> Humidity
+                                <span class="label-unit">%</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="humidity" name="humidity" placeholder="e.g. 82"
+                                    min="0" max="100" value="{{ request.form.get('humidity', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Range: 14% – 100%</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="ph">
+                                <span class="label-icon"><span
+                                        class="material-symbols-outlined">experiment</span></span> Soil pH
+                                <span class="label-unit">0–14</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="ph" name="ph" placeholder="e.g. 6.5" min="0"
+                                    max="14" value="{{ request.form.get('ph', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Neutral: 7.0</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="rainfall">
+                                <span class="label-icon"><span class="material-symbols-outlined">rainy</span></span>
+                                Rainfall
+                                <span class="label-unit">mm</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" step="any" id="rainfall" name="rainfall" placeholder="e.g. 202"
+                                    min="0" max="3000" value="{{ request.form.get('rainfall', '') }}" required>
+                                <div class="input-bar"></div>
+                            </div>
+                            <span class="hint">Annual rainfall in mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-predict" id="submit-btn">
+                    <span class="btn-text">
+                        <span class="btn-icon"><span class="material-symbols-outlined">agriculture</span></span>
+                        Recommend Crop
+                    </span>
+                    <div class="btn-loader" id="btn-loader">
+                        <div class="spinner"></div>
+                        <span>Analyzing...</span>
+                    </div>
+                    <div class="btn-glow"></div>
+                </button>
+
+            </form>
+
+            {% if prediction %}
+            <div class="result-card {% if '❌' in prediction %}result-error{% else %}result-success{% endif %}"
+                id="result-card">
+                {% if '❌' in prediction %}
+                <div class="result-icon-wrap error-icon"><span class="material-symbols-outlined">cancel</span></div>
+                <div class="result-content">
+                    <p class="result-label">Error</p>
+                    <p class="result-crop">{{ prediction }}</p>
+                    <p class="result-note">Please check your inputs and try again.</p>
+                </div>
+                {% else %}
+                <div class="result-icon-wrap success-icon"><span class="material-symbols-outlined">check_circle</span>
+                </div>
+                <div class="result-content">
+                    <p class="result-label">Recommended Crop</p>
+                    <h3 class="result-crop">{{ prediction | title }}</h3>
+                    <p class="result-note">Based on your soil and climate data, this crop is most likely to thrive.</p>
+                </div>
+                <div class="result-badge">Best Match</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </main>
+
+        <section class="info-section">
+            <div class="info-card">
+                <div class="info-icon"><span class="material-symbols-outlined">public</span></div>
+                <h3>22 Crops</h3>
+                <p>Trained across a wide variety of staple and cash crops</p>
+            </div>
+            <div class="info-card">
+                <div class="info-icon"><span class="material-symbols-outlined">smart_toy</span></div>
+                <h3>ML Powered</h3>
+                <p>Stacked ensemble model for high-accuracy predictions</p>
+            </div>
+            <div class="info-card">
+                <div class="info-icon"><span class="material-symbols-outlined">bolt</span></div>
+                <h3>Instant</h3>
+                <p>Real-time predictions in under a second</p>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Cropalyst &copy; AgniX
+                <span class="material-symbols-outlined footer-icon" style="font-size:1rem;">favorite</span>
+                for smart farming
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        const container = document.getElementById('particles');
+        const symbols = ['grass', 'spa', 'eco', 'nature', 'park', 'yard', 'agriculture', 'forest'];
+        for (let i = 0; i < 18; i++) {
+            const p = document.createElement('span');
+            p.classList.add('particle', 'material-symbols-outlined');
+            p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.animationDuration = (12 + Math.random() * 20) + 's';
+            p.style.animationDelay = (Math.random() * 15) + 's';
+            p.style.fontSize = (0.9 + Math.random() * 1.2) + 'rem';
+            p.style.opacity = (0.08 + Math.random() * 0.14) + '';
+            container.appendChild(p);
+        }
+
+        const form = document.getElementById('predict-form');
+        const btnText = document.querySelector('.btn-text');
+        const btnLoader = document.getElementById('btn-loader');
+
+        form.addEventListener('submit', function (e) {
+            const inputs = form.querySelectorAll('input[required]');
+            let valid = true;
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    valid = false;
+                    input.classList.add('input-error');
+                } else {
+                    input.classList.remove('input-error');
+                }
+            });
+
+            if (!valid) {
+                e.preventDefault();
+                return;
+            }
+
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'flex';
+        });
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => input.classList.remove('input-error'));
+        });
+
+        const resultCard = document.getElementById('result-card');
+        if (resultCard) {
+            setTimeout(() => {
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultCard.classList.add('result-animate');
+            }, 200);
+        }
+
+        const soilInputs = ['N', 'P', 'K'];
+        const climateInputs = ['temperature', 'humidity', 'ph', 'rainfall'];
+
+        soilInputs.forEach(id => {
+            document.getElementById(id)?.addEventListener('focus', () => {
+                document.getElementById('step-soil').classList.add('active');
+            });
+        });
+
+        climateInputs.forEach(id => {
+            document.getElementById(id)?.addEventListener('focus', () => {
+                document.getElementById('step-climate').classList.add('active');
+            });
+        });
+    </script>
 </body>
+
 </html>
